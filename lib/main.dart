@@ -6,7 +6,7 @@ void main() {
 
   doWhenWindowReady(() {
     const initialSize = Size(600, 450);
-    appWindow.minSize = initialSize;
+    appWindow.minSize = const Size(100, 100);
     appWindow.size = initialSize;
     appWindow.alignment = Alignment.center;
     appWindow.show();
@@ -55,12 +55,19 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: WindowBorder(
-        color: Colors.red,
-        width: 5,
-        child: const Center(
-          child: Text('TODO 贪吃蛇'),
-        ),
+      body: LayoutBuilder(
+        builder: (context,constraints) {
+          return SizedBox(
+            width: appWindow.size.width,
+            height: appWindow.size.height,
+            child: FittedBox(
+              fit: BoxFit.contain,
+              child: Image.network(
+                'https://autocode.icu/assets/images/other-images/heihei.gif',
+              ),
+            ),
+          );
+        }
       ),
     );
   }
