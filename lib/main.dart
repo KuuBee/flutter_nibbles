@@ -54,21 +54,39 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   @override
   Widget build(BuildContext context) {
+    final width = appWindow.size.width;
+    final height = appWindow.size.height;
     return Scaffold(
-      body: LayoutBuilder(
-        builder: (context,constraints) {
-          return SizedBox(
-            width: appWindow.size.width,
-            height: appWindow.size.height,
-            child: FittedBox(
-              fit: BoxFit.contain,
-              child: Image.network(
-                'https://autocode.icu/assets/images/other-images/heihei.gif',
+      body: LayoutBuilder(builder: (context, constraints) {
+        return Container(
+          color: Colors.purpleAccent.withOpacity(.2),
+          width: constraints.maxWidth,
+          height: constraints.maxHeight,
+          child: FittedBox(
+            fit: BoxFit.contain,
+            child: Container(
+              color: Colors.green.withOpacity(.5),
+              height: height,
+              width: width,
+              child: Column(
+                children: List.generate(
+                  10,
+                  (index) => Row(
+                    children: List.generate(
+                      10,
+                      (index) => Container(
+                        width: width / 10,
+                        height: height / 10,
+                        color: Colors.redAccent,
+                      ),
+                    ),
+                  ),
+                ),
               ),
             ),
-          );
-        }
-      ),
+          ),
+        );
+      }),
     );
   }
 }
