@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:bitsdojo_window/bitsdojo_window.dart';
+import 'package:nibbles/widget/map.dart';
 
 void main() {
   runApp(const MyApp());
 
   doWhenWindowReady(() {
-    const initialSize = Size(600, 450);
+    const initialSize = Size(1000, 1000);
     appWindow.minSize = const Size(100, 100);
     appWindow.size = initialSize;
     appWindow.alignment = Alignment.center;
@@ -54,36 +55,17 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   @override
   Widget build(BuildContext context) {
-    final width = appWindow.size.width;
-    final height = appWindow.size.height;
     return Scaffold(
       body: LayoutBuilder(builder: (context, constraints) {
         return Container(
           color: Colors.purpleAccent.withOpacity(.2),
           width: constraints.maxWidth,
           height: constraints.maxHeight,
-          child: FittedBox(
-            fit: BoxFit.contain,
-            child: Container(
-              color: Colors.green.withOpacity(.5),
-              height: height,
-              width: width,
-              child: Column(
-                children: List.generate(
-                  10,
-                  (index) => Row(
-                    children: List.generate(
-                      10,
-                      (index) => Container(
-                        width: width / 10,
-                        height: height / 10,
-                        color: Colors.redAccent,
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-            ),
+          child: Stack(
+            fit: StackFit.expand,
+            children: const [
+              NibblesWidget()
+            ],
           ),
         );
       }),
