@@ -2,7 +2,8 @@ import 'dart:async';
 import 'dart:developer';
 
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
+import 'package:nibbles/core/game_config.dart';
+import 'package:nibbles/core/nibbles_core.dart';
 import 'package:nibbles/core/nibbles_linked_list.dart';
 
 class NibblesWidget extends StatefulWidget {
@@ -13,10 +14,15 @@ class NibblesWidget extends StatefulWidget {
 }
 
 class _NibblesWidgetState extends State<NibblesWidget> {
-  final width = 100.0;
-  final height = 100.0;
+  final config = GameConfig(
+    timeInterval: const Duration(milliseconds: 100),
+  );
   late final FocusNode node;
-  NibblesLinkedList nibblesHeader = NibblesLinkedList(44);
+  late final NibblesLinkedList nibblesHeader = NibblesLinkedList(
+    44,
+    Direction.right,
+  );
+  late final NibblesCore core = NibblesCore(nibblesHeader, config);
   Direction currentDirection = Direction.right;
 
   @override
@@ -38,13 +44,16 @@ class _NibblesWidgetState extends State<NibblesWidget> {
   }
 
   init() {
-    //milliseconds: 300
-    const duration = Duration(seconds: 2);
-    Timer.periodic(duration, (timer) {
-      setState(() {
-        final returnDir = nibblesHeader.moveDirection(currentDirection);
-        if (returnDir != null) currentDirection = returnDir;
-      });
+    Timer.periodic(config.timeInterval, (timer) {
+      try {
+        setState(() {
+          final returnDir = core.moveDirection(currentDirection);
+          if (returnDir != null) currentDirection = returnDir;
+        });
+      } catch (error) {
+        log(error.toString());
+        timer.cancel();
+      }
     });
   }
 
@@ -84,20 +93,21 @@ class _NibblesWidgetState extends State<NibblesWidget> {
 
   @override
   Widget build(BuildContext context) {
+    final itemCount = config.itemCount;
     return KeyboardListener(
       focusNode: node,
       child: FittedBox(
         fit: BoxFit.contain,
         child: Container(
           color: Colors.green.withOpacity(.5),
-          height: height,
-          width: width,
+          height: config.height,
+          width: config.width,
           child: GridView.builder(
-            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 10,
+            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: config.columnCount,
               childAspectRatio: 1.0,
             ),
-            itemCount: 100,
+            itemCount: itemCount,
             itemBuilder: (context, index) {
               bool isEnd = false;
               NibblesLinkedList? current = nibblesHeader;
@@ -109,20 +119,19 @@ class _NibblesWidgetState extends State<NibblesWidget> {
                   if (current == null) isEnd = true;
                 }
               }
-              final rowsIndex = index % 20;
-              final columnIndex = rowsIndex % 2;
+              final rowsIndex = (index / config.columnCount).floor();
               final rowsColors1 = [Colors.amberAccent, Colors.blueAccent];
               final rowsColors2 = [Colors.blueAccent, Colors.amberAccent];
-              final colors = rowsIndex >= 10 ? rowsColors1 : rowsColors2;
+              final colors = rowsIndex.isOdd ? rowsColors1 : rowsColors2;
               return Container(
-                color: columnIndex != 0 ? colors[0] : colors[1],
-                child: Center(
-                  child: FittedBox(
-                    child: Text(
-                      index.toString(),
-                    ),
-                  ),
-                ),
+                color: index.isEven ? colors[0] : colors[1],
+                // child: Center(
+                //   child: FittedBox(
+                //     child: Text(
+                //       index.toString(),
+                //     ),
+                //   ),
+                // ),
               );
             },
           ),
