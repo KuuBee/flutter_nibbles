@@ -14,6 +14,7 @@ class GameConfig {
     this.rowCount = 30,
     this.columnCount = 30,
     this.timeInterval = const Duration(milliseconds: 300),
+    this.obstacle = const [],
   });
   // 基础宽度
   double baseWidth;
@@ -23,7 +24,9 @@ class GameConfig {
   int rowCount;
   // 棋盘列数
   int columnCount;
+  // 运动间隔
   Duration timeInterval;
+  List<int> obstacle;
   // 渲染块数量
   get itemCount => rowCount * columnCount;
   // 棋盘高度

@@ -15,30 +15,25 @@ class NibblesWidget extends StatefulWidget {
 
 class _NibblesWidgetState extends State<NibblesWidget> {
   final config = GameConfig(
-    timeInterval: const Duration(milliseconds: 100),
+    columnCount: 10,
+    rowCount: 10,
+    timeInterval: const Duration(milliseconds: 300),
   );
   late final FocusNode node;
+  late final NibblesCore core = NibblesCore(nibblesHeader, config);
   late final NibblesLinkedList nibblesHeader = NibblesLinkedList(
-    44,
+    0,
     Direction.right,
   );
-  late final NibblesCore core = NibblesCore(nibblesHeader, config);
   Direction currentDirection = Direction.right;
 
   @override
   initState() {
-    NibblesLinkedList root1 = NibblesLinkedList(43);
-    NibblesLinkedList root2 = NibblesLinkedList(42);
-    NibblesLinkedList root3 = NibblesLinkedList(41);
-    NibblesLinkedList root4 = NibblesLinkedList(40);
-    root1.next = root2;
-    root2.next = root3;
-    root3.next = root4;
-    nibblesHeader.next = root1;
     node = FocusNode(
       debugLabel: 'move',
       onKey: onKey,
     );
+    core.generatePointNode();
     init();
     super.initState();
   }
@@ -98,42 +93,44 @@ class _NibblesWidgetState extends State<NibblesWidget> {
       focusNode: node,
       child: FittedBox(
         fit: BoxFit.contain,
-        child: Container(
-          color: Colors.green.withOpacity(.5),
-          height: config.height,
-          width: config.width,
-          child: GridView.builder(
-            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: config.columnCount,
-              childAspectRatio: 1.0,
-            ),
-            itemCount: itemCount,
-            itemBuilder: (context, index) {
-              bool isEnd = false;
-              NibblesLinkedList? current = nibblesHeader;
-              while (!isEnd) {
-                if (index == current?.currentIndex) {
-                  return const NibblesBody();
-                } else {
-                  current = current?.next;
-                  if (current == null) isEnd = true;
+        child: RepaintBoundary(
+          child: Container(
+            color: Colors.green.withOpacity(.5),
+            height: config.height,
+            width: config.width,
+            child: GridView.builder(
+              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: config.columnCount,
+                childAspectRatio: 1.0,
+              ),
+              itemCount: itemCount,
+              itemBuilder: (context, index) {
+                bool isEnd = false;
+                NibblesLinkedList? current = nibblesHeader;
+                while (!isEnd) {
+                  if (index == current?.currentIndex) {
+                    return const NibblesBody();
+                  } else {
+                    current = current?.next;
+                    if (current == null) isEnd = true;
+                  }
                 }
-              }
-              final rowsIndex = (index / config.columnCount).floor();
-              final rowsColors1 = [Colors.amberAccent, Colors.blueAccent];
-              final rowsColors2 = [Colors.blueAccent, Colors.amberAccent];
-              final colors = rowsIndex.isOdd ? rowsColors1 : rowsColors2;
-              return Container(
-                color: index.isEven ? colors[0] : colors[1],
-                // child: Center(
-                //   child: FittedBox(
-                //     child: Text(
-                //       index.toString(),
-                //     ),
-                //   ),
-                // ),
-              );
-            },
+
+                if (core.pointNodeList.contains(index)) {
+                  return Container(
+                    color: Colors.purple,
+                  );
+                }
+
+                final rowsIndex = (index / config.columnCount).floor();
+                final rowsColors1 = [Colors.amberAccent, Colors.blueAccent];
+                final rowsColors2 = [Colors.blueAccent, Colors.amberAccent];
+                final colors = rowsIndex.isOdd ? rowsColors1 : rowsColors2;
+                return Container(
+                  color: index.isEven ? colors[0] : colors[1],
+                );
+              },
+            ),
           ),
         ),
       ),
