@@ -15,10 +15,16 @@ class NibblesWidget extends StatefulWidget {
 
 class _NibblesWidgetState extends State<NibblesWidget> {
   final config = GameConfig(
-    columnCount: 10,
-    rowCount: 10,
-    timeInterval: const Duration(milliseconds: 300),
-  );
+      columnCount: 10,
+      rowCount: 10,
+      timeInterval: const Duration(milliseconds: 500),
+      obstacle: [
+        10,
+        11,
+        12,
+        13,
+        14,
+      ]);
   late final FocusNode node;
   late final NibblesCore core = NibblesCore(nibblesHeader, config);
   late final NibblesLinkedList nibblesHeader = NibblesLinkedList(
@@ -109,6 +115,7 @@ class _NibblesWidgetState extends State<NibblesWidget> {
                 NibblesLinkedList? current = nibblesHeader;
                 while (!isEnd) {
                   if (index == current?.currentIndex) {
+                    // 蛇体
                     return const NibblesBody();
                   } else {
                     current = current?.next;
@@ -116,12 +123,19 @@ class _NibblesWidgetState extends State<NibblesWidget> {
                   }
                 }
 
+                // 豆豆
                 if (core.pointNodeList.contains(index)) {
                   return Container(
                     color: Colors.purple,
                   );
                 }
+                if (config.obstacle.contains(index)) {
+                  return Container(
+                    color: Colors.white38,
+                  );
+                }
 
+                // 棋盘
                 final rowsIndex = (index / config.columnCount).floor();
                 final rowsColors1 = [Colors.amberAccent, Colors.blueAccent];
                 final rowsColors2 = [Colors.blueAccent, Colors.amberAccent];

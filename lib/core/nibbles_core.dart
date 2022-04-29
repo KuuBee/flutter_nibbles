@@ -28,8 +28,9 @@ class NibblesCore {
           if (direction == Direction.left) {
             returnDir = direction;
           } else {
-            if (!obstacle.right.contains(linkedList.currentIndex)) {
-              linkedList.move(currentIndex + 1);
+            final nextIndex = currentIndex + 1;
+            if (!obstacle.right.contains(nextIndex)) {
+              linkedList.move(nextIndex);
             } else {
               throw Exception('到达边界');
             }
@@ -41,8 +42,9 @@ class NibblesCore {
           if (direction == Direction.right) {
             returnDir = direction;
           } else {
-            if (!obstacle.left.contains(linkedList.currentIndex)) {
-              linkedList.move(currentIndex - 1);
+            final nextIndex = currentIndex - 1;
+            if (!obstacle.left.contains(nextIndex)) {
+              linkedList.move(nextIndex);
             } else {
               throw Exception('到达边界');
             }
@@ -54,8 +56,9 @@ class NibblesCore {
           if (direction == Direction.up) {
             returnDir = direction;
           } else {
-            if (!obstacle.bottom.contains(linkedList.currentIndex)) {
-              linkedList.move(currentIndex + config.columnCount);
+            final nextIndex = currentIndex + config.columnCount;
+            if (!obstacle.bottom.contains(nextIndex)) {
+              linkedList.move(nextIndex);
             } else {
               throw Exception('到达边界');
             }
@@ -67,8 +70,9 @@ class NibblesCore {
           if (direction == Direction.down) {
             returnDir = direction;
           } else {
-            if (!obstacle.top.contains(linkedList.currentIndex)) {
-              linkedList.move(currentIndex - config.columnCount);
+            final nextIndex = currentIndex - config.columnCount;
+            if (!obstacle.top.contains(nextIndex)) {
+              linkedList.move(nextIndex);
             } else {
               throw Exception('到达边界');
             }

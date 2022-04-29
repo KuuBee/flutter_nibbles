@@ -13,27 +13,34 @@ class ObstacleDetect {
   // 边界索引
   List<int> get top => [
         ...gameObstacle,
-        ...List.generate(_config.columnCount, (index) => index)
-      ];
-  List<int> get bottom => [
-        ...gameObstacle,
         ...List.generate(
           _config.columnCount,
-          (index) => _config.columnCount * (_config.rowCount - 1) + index,
+          (index) => index - _config.columnCount,
         )
       ];
+  List<int> get bottom {
+    final itemCount = _config.columnCount * _config.rowCount;
+    return [
+      ...gameObstacle,
+      ...List.generate(
+        _config.columnCount,
+        (index) => itemCount + index,
+      )
+    ];
+  }
+
   List<int> get left => [
         ...gameObstacle,
         ...List.generate(
           _config.rowCount,
-          (index) => index * _config.columnCount,
+          (index) => index * _config.columnCount - 1,
         )
       ];
   List<int> get right => [
         ...gameObstacle,
         ...List.generate(
           _config.rowCount,
-          (index) => (index + 1) * _config.columnCount - 1,
+          (index) => (index + 1) * _config.columnCount,
         )
       ];
 }
