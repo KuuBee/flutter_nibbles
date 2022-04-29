@@ -1,6 +1,7 @@
 import 'dart:developer';
 
 import 'package:nibbles/core/game_config.dart';
+import 'package:nibbles/core/game_exception.dart';
 import 'package:nibbles/core/nibbles_core.dart';
 
 typedef IterateCallback = void Function(NibblesLinkedList current);
@@ -32,7 +33,10 @@ class NibblesLinkedList {
     });
     // 判断是否碰撞到自身
     if (isHeader && dataList.contains(newIndex)) {
-      throw Exception('碰撞到自身');
+      throw GameException(
+        state: GameState.selfConflict,
+        message: '碰撞到自身',
+      );
     }
     if (newIndex == currentIndex) return;
     next?.move(currentIndex);
@@ -42,6 +46,12 @@ class NibblesLinkedList {
     if (core!.pointNodeList.contains(newIndex)) {
       last.next = NibblesLinkedList(last.currentIndex);
       core!.generatePointNode();
+      if (core?.pointNodeList.isEmpty ?? false) {
+        throw GameException(
+          state: GameState.win,
+          message: '胜利！',
+        );
+      }
     }
   }
 

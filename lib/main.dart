@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:bitsdojo_window/bitsdojo_window.dart';
+import 'package:nibbles/view/home.dart';
 import 'package:nibbles/widget/map.dart';
 
 void main() {
@@ -56,10 +57,10 @@ class _MyHomePageState extends State<MyHomePage> {
     return Scaffold(
       body: LayoutBuilder(builder: (context, constraints) {
         return Container(
-          color: Colors.purpleAccent.withOpacity(.2),
+          color: const Color(0xFFDB806E),
           width: constraints.maxWidth,
           height: constraints.maxHeight,
-          child: const NibblesWidget(),
+          child: const HomePage(),
         );
       }),
     );

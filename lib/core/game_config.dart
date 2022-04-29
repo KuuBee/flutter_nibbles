@@ -6,6 +6,15 @@ enum Direction {
   right,
 }
 
+enum GameState {
+  // 胜利
+  win,
+  // 自身冲突
+  selfConflict,
+  // 障碍物冲突
+  obstacleConflict
+}
+
 // 游戏配置
 class GameConfig {
   GameConfig({

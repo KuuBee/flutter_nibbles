@@ -7,24 +7,15 @@ import 'package:nibbles/core/nibbles_core.dart';
 import 'package:nibbles/core/nibbles_linked_list.dart';
 
 class NibblesWidget extends StatefulWidget {
-  const NibblesWidget({Key? key}) : super(key: key);
+  const NibblesWidget({Key? key, required this.config}) : super(key: key);
+  final GameConfig config;
 
   @override
   State<NibblesWidget> createState() => _NibblesWidgetState();
 }
 
 class _NibblesWidgetState extends State<NibblesWidget> {
-  final config = GameConfig(
-      columnCount: 10,
-      rowCount: 10,
-      timeInterval: const Duration(milliseconds: 500),
-      obstacle: [
-        10,
-        11,
-        12,
-        13,
-        14,
-      ]);
+  late final config = widget.config;
   late final FocusNode node;
   late final NibblesCore core = NibblesCore(nibblesHeader, config);
   late final NibblesLinkedList nibblesHeader = NibblesLinkedList(
@@ -52,6 +43,7 @@ class _NibblesWidgetState extends State<NibblesWidget> {
           if (returnDir != null) currentDirection = returnDir;
         });
       } catch (error) {
+        // TODO 需要判断一下这个error的类型
         log(error.toString());
         timer.cancel();
       }
@@ -99,52 +91,58 @@ class _NibblesWidgetState extends State<NibblesWidget> {
       focusNode: node,
       child: FittedBox(
         fit: BoxFit.contain,
-        child: RepaintBoundary(
-          child: Container(
-            color: Colors.green.withOpacity(.5),
-            height: config.height,
-            width: config.width,
-            child: GridView.builder(
-              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: config.columnCount,
-                childAspectRatio: 1.0,
-              ),
-              itemCount: itemCount,
-              itemBuilder: (context, index) {
-                bool isEnd = false;
-                NibblesLinkedList? current = nibblesHeader;
-                while (!isEnd) {
-                  if (index == current?.currentIndex) {
-                    // 蛇体
-                    return const NibblesBody();
-                  } else {
-                    current = current?.next;
-                    if (current == null) isEnd = true;
-                  }
-                }
-
-                // 豆豆
-                if (core.pointNodeList.contains(index)) {
-                  return Container(
-                    color: Colors.purple,
-                  );
-                }
-                if (config.obstacle.contains(index)) {
-                  return Container(
-                    color: Colors.white38,
-                  );
-                }
-
-                // 棋盘
-                final rowsIndex = (index / config.columnCount).floor();
-                final rowsColors1 = [Colors.amberAccent, Colors.blueAccent];
-                final rowsColors2 = [Colors.blueAccent, Colors.amberAccent];
-                final colors = rowsIndex.isOdd ? rowsColors1 : rowsColors2;
-                return Container(
-                  color: index.isEven ? colors[0] : colors[1],
-                );
-              },
+        child: Container(
+          color: Colors.green.withOpacity(.5),
+          height: config.height,
+          width: config.width,
+          child: GridView.builder(
+            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: config.columnCount,
+              childAspectRatio: 1.0,
             ),
+            itemCount: itemCount,
+            itemBuilder: (context, index) {
+              bool isEnd = false;
+              NibblesLinkedList? current = nibblesHeader;
+              while (!isEnd) {
+                if (index == current?.currentIndex) {
+                  // 蛇体
+                  return const NibblesBody();
+                } else {
+                  current = current?.next;
+                  if (current == null) isEnd = true;
+                }
+              }
+
+              // 豆豆
+              if (core.pointNodeList.contains(index)) {
+                return Container(
+                  color: Colors.purple,
+                );
+              }
+              if (config.obstacle.contains(index)) {
+                return Container(
+                  color: Colors.white38,
+                );
+              }
+
+              // 棋盘
+              final rowsIndex = (index / config.columnCount).floor();
+              const rowsColors1 = [Color(0xFFEDD97E), Color(0xFF7FC5E3)];
+              const rowsColors2 = [Color(0xFF7FC5E3), Color(0xFFEDD97E)];
+              List<Color> colors;
+              if (config.columnCount.isEven) {
+                colors = rowsIndex.isOdd ? rowsColors1 : rowsColors2;
+              } else {
+                colors = rowsColors1;
+              }
+              return Container(
+                color: colors[index.isEven ? 0 : 1],
+                // child: FittedBox(
+                //   child: Text(index.toString()),
+                // ),
+              );
+            },
           ),
         ),
       ),

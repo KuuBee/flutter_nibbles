@@ -1,6 +1,7 @@
 import 'dart:developer';
 import 'dart:math' as math;
 
+import 'package:nibbles/core/game_exception.dart';
 import 'package:nibbles/core/obstacle_detect.dart';
 import 'package:nibbles/core/game_config.dart';
 import 'package:nibbles/core/nibbles_linked_list.dart';
@@ -32,7 +33,10 @@ class NibblesCore {
             if (!obstacle.right.contains(nextIndex)) {
               linkedList.move(nextIndex);
             } else {
-              throw Exception('到达边界');
+              throw GameException(
+                state: GameState.obstacleConflict,
+                message: '到达边界',
+              );
             }
           }
           break;
@@ -46,7 +50,10 @@ class NibblesCore {
             if (!obstacle.left.contains(nextIndex)) {
               linkedList.move(nextIndex);
             } else {
-              throw Exception('到达边界');
+              throw GameException(
+                state: GameState.obstacleConflict,
+                message: '到达边界',
+              );
             }
           }
           break;
@@ -60,7 +67,10 @@ class NibblesCore {
             if (!obstacle.bottom.contains(nextIndex)) {
               linkedList.move(nextIndex);
             } else {
-              throw Exception('到达边界');
+              throw GameException(
+                state: GameState.obstacleConflict,
+                message: '到达边界',
+              );
             }
           }
           break;
@@ -74,7 +84,10 @@ class NibblesCore {
             if (!obstacle.top.contains(nextIndex)) {
               linkedList.move(nextIndex);
             } else {
-              throw Exception('到达边界');
+              throw GameException(
+                state: GameState.obstacleConflict,
+                message: '到达边界',
+              );
             }
           }
           break;
