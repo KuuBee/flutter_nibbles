@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:bitsdojo_window/bitsdojo_window.dart';
+import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:nibbles/view/home.dart';
-import 'package:nibbles/widget/map.dart';
+
+const title = 'Nibbles(贪吃蛇)';
 
 void main() {
   runApp(const MyApp());
@@ -12,6 +14,7 @@ void main() {
     appWindow.size = initialSize;
     appWindow.alignment = Alignment.center;
     appWindow.show();
+    appWindow.title = title;
   });
 }
 
@@ -23,16 +26,35 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Nibbles(贪吃蛇)',
+      title: title,
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
+      // here
+      navigatorObservers: [FlutterSmartDialog.observer],
+      // here
+      builder: FlutterSmartDialog.init(),
       home: Column(
         children: [
           WindowTitleBarBox(
-            child: Container(
-              color: Colors.red,
-              child: MoveWindow(),
+            child: MoveWindow(
+              child: Container(
+                color: Colors.red,
+                child: Row(
+                  children: const [
+                    Expanded(
+                      child: Center(
+                        child: Text(
+                          title,
+                          style: TextStyle(
+                            color: Colors.white,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
             ),
           ),
           const Expanded(

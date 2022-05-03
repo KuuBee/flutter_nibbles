@@ -44,6 +44,7 @@ class NibblesLinkedList {
     // 判断是否为分数点
     if (core?.pointNodeList == null) return;
     if (core!.pointNodeList.contains(newIndex)) {
+      // FIXME 无法胜利
       last.next = NibblesLinkedList(last.currentIndex);
       core!.generatePointNode();
       if (core?.pointNodeList.isEmpty ?? false) {

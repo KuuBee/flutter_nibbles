@@ -6,14 +6,24 @@ import 'package:nibbles/core/obstacle_detect.dart';
 import 'package:nibbles/core/game_config.dart';
 import 'package:nibbles/core/nibbles_linked_list.dart';
 
+typedef OnScoreChange = void Function(int score);
+
 class NibblesCore {
-  NibblesCore(this.linkedList, this.config) {
+  NibblesCore(
+    this.linkedList,
+    this.config, {
+    this.onScoreChange,
+  }) {
     linkedList.core = this;
   }
+
   // 蛇头节点
   NibblesLinkedList linkedList;
   GameConfig config;
   List<int> pointNodeList = [];
+  OnScoreChange? onScoreChange;
+  int _score = -1;
+
   ObstacleDetect get obstacle => ObstacleDetect(config);
 
   // 按方向运动
@@ -103,6 +113,7 @@ class NibblesCore {
 
   // 生成豆豆
   generatePointNode() {
+    _score++;
     final rand = math.Random();
     // 障碍占据的点 蛇和游戏障碍物
     final List<int> obstacleDataList = [...obstacle.gameObstacle];
@@ -120,7 +131,12 @@ class NibblesCore {
         emptyDataList.add(element);
       }
     }
-    final randomIndex = rand.nextInt(emptyDataList.length);
-    pointNodeList = [emptyDataList[randomIndex]];
+    if (emptyDataList.isNotEmpty) {
+      final randomIndex = rand.nextInt(emptyDataList.length);
+      pointNodeList = [emptyDataList[randomIndex]];
+    }
+    if (onScoreChange != null) {
+      onScoreChange!(_score);
+    }
   }
 }
