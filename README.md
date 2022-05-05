@@ -1,16 +1,9 @@
 # nibbles
 
-A new Flutter project.
+一个学习用 `flutter`构建的一个简单的贪吃蛇小游戏。
 
-## Getting Started
+现在支持在运行 `Mac Windows Web IOS Android` 上运行。
 
-This project is a starting point for a Flutter application.
+`Linux` 因为没有设备就懒得测试了，理论上也可以跑。
 
-A few resources to get you started if this is your first Flutter project:
-
-- [Lab: Write your first Flutter app](https://flutter.dev/docs/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://flutter.dev/docs/cookbook)
-
-For help getting started with Flutter, view our
-[online documentation](https://flutter.dev/docs), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+使用方向键或滑动控制。
