@@ -17,6 +17,12 @@ class NibblesCore {
     linkedList.core = this;
   }
 
+  final directionConflictMap = {
+    Direction.right: Direction.left,
+    Direction.left: Direction.right,
+    Direction.up: Direction.down,
+    Direction.down: Direction.up,
+  };
   // 蛇头节点
   NibblesLinkedList linkedList;
   GameConfig config;
@@ -25,90 +31,65 @@ class NibblesCore {
   int _score = -1;
 
   ObstacleDetect get obstacle => ObstacleDetect(config);
+  Map<Direction, int> get directionStepMap => {
+        Direction.right: 1,
+        Direction.left: -1,
+        Direction.up: -config.columnCount,
+        Direction.down: config.columnCount,
+      };
+  Map<Direction, List<int>> get directionObstacleMap => {
+        Direction.right: obstacle.right,
+        Direction.left: obstacle.left,
+        Direction.up: obstacle.top,
+        Direction.down: obstacle.bottom,
+      };
 
-  // 按方向运动
-  Direction? moveDirection(Direction dir, [int? step = 1]) {
-    assert(linkedList.direction != null, 'direction 不能为 null');
-    final direction = linkedList.direction;
-    final currentIndex = linkedList.currentIndex;
-    if (direction == null) return direction;
-    Direction? returnDir;
-    switch (dir) {
-      case Direction.right:
-        {
-          if (direction == Direction.left) {
-            returnDir = direction;
-          } else {
-            final nextIndex = currentIndex + 1;
-            if (!obstacle.right.contains(nextIndex)) {
-              linkedList.move(nextIndex);
-            } else {
-              throw GameException(
-                state: GameState.obstacleConflict,
-                message: '到达边界',
-              );
-            }
-          }
-          break;
-        }
-      case Direction.left:
-        {
-          if (direction == Direction.right) {
-            returnDir = direction;
-          } else {
-            final nextIndex = currentIndex - 1;
-            if (!obstacle.left.contains(nextIndex)) {
-              linkedList.move(nextIndex);
-            } else {
-              throw GameException(
-                state: GameState.obstacleConflict,
-                message: '到达边界',
-              );
-            }
-          }
-          break;
-        }
-      case Direction.down:
-        {
-          if (direction == Direction.up) {
-            returnDir = direction;
-          } else {
-            final nextIndex = currentIndex + config.columnCount;
-            if (!obstacle.bottom.contains(nextIndex)) {
-              linkedList.move(nextIndex);
-            } else {
-              throw GameException(
-                state: GameState.obstacleConflict,
-                message: '到达边界',
-              );
-            }
-          }
-          break;
-        }
-      case Direction.up:
-        {
-          if (direction == Direction.down) {
-            returnDir = direction;
-          } else {
-            final nextIndex = currentIndex - config.columnCount;
-            if (!obstacle.top.contains(nextIndex)) {
-              linkedList.move(nextIndex);
-            } else {
-              throw GameException(
-                state: GameState.obstacleConflict,
-                message: '到达边界',
-              );
-            }
-          }
-          break;
-        }
-    }
-    if (returnDir == null) {
-      linkedList.direction = dir;
+  Direction? move(Direction dir) {
+    // 冲突的方向
+    final directionConflict = directionConflictMap[dir];
+    // 这个方向下的移动数据
+    final directionStep = directionStepMap[dir];
+    // 方向边界
+    final directionObstacle = directionObstacleMap[dir];
+    // 蛇的全部身体节点数据
+    final List<int> dataList = [];
+    // 蛇的最后一个节点
+    final last = linkedList.getLast((current) {
+      dataList.add(current.currentIndex);
+    });
+    if (linkedList.direction == directionConflict) {
+      move(linkedList.direction!);
+      return linkedList.direction!;
     } else {
-      moveDirection(returnDir);
+      linkedList.direction = dir;
     }
-    return returnDir;
+    final nextIndex = linkedList.currentIndex + directionStep!;
+    // 判断是否触碰到边界
+    if (directionObstacle!.contains(nextIndex)) {
+      throw GameException(
+        state: GameState.obstacleConflict,
+        message: '到达边界',
+      );
+    }
+    // 判断是否碰撞到自身
+    if (dataList.contains(nextIndex)) {
+      throw GameException(
+        state: GameState.selfConflict,
+        message: '碰撞到自身',
+      );
+    }
+    linkedList.move(nextIndex);
+    if (pointNodeList.contains(nextIndex)) {
+      last.next = NibblesLinkedList(last.currentIndex);
+      generatePointNode();
+      if (_score >= config.itemCount) {
+        throw GameException(
+          state: GameState.win,
+          message: '胜利！',
+        );
+      }
+    }
+    return null;
   }
 
   // 生成豆豆
@@ -134,6 +115,8 @@ class NibblesCore {
     if (emptyDataList.isNotEmpty) {
       final randomIndex = rand.nextInt(emptyDataList.length);
       pointNodeList = [emptyDataList[randomIndex]];
+    } else {
+      pointNodeList = [];
     }
     if (onScoreChange != null) {
       onScoreChange!(_score);

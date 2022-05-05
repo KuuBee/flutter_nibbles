@@ -1,7 +1,6 @@
 import 'dart:developer';
 
 import 'package:nibbles/core/game_config.dart';
-import 'package:nibbles/core/game_exception.dart';
 import 'package:nibbles/core/nibbles_core.dart';
 
 typedef IterateCallback = void Function(NibblesLinkedList current);
@@ -23,37 +22,12 @@ class NibblesLinkedList {
   Direction? direction;
   NibblesCore? core;
 
-  get isHeader => direction != null;
+  bool get isHeader => direction != null;
 
-  // 移动这个节点到新的位置 同时更新下一个节点
-  void move(int newIndex) {
-    List<int> dataList = [];
-    final last = getLast((current) {
-      dataList.add(current.currentIndex);
-    });
-    // 判断是否碰撞到自身
-    if (isHeader && dataList.contains(newIndex)) {
-      throw GameException(
-        state: GameState.selfConflict,
-        message: '碰撞到自身',
-      );
-    }
+  move(int newIndex) {
     if (newIndex == currentIndex) return;
     next?.move(currentIndex);
     currentIndex = newIndex;
-    // 判断是否为分数点
-    if (core?.pointNodeList == null) return;
-    if (core!.pointNodeList.contains(newIndex)) {
-      // FIXME 无法胜利
-      last.next = NibblesLinkedList(last.currentIndex);
-      core!.generatePointNode();
-      if (core?.pointNodeList.isEmpty ?? false) {
-        throw GameException(
-          state: GameState.win,
-          message: '胜利！',
-        );
-      }
-    }
   }
 
   // 获取最后一个节点并且提供一个每次迭代的回调

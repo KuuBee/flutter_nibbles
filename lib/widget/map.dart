@@ -1,6 +1,8 @@
 import 'dart:async';
 import 'dart:developer';
+import 'dart:io';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
@@ -24,8 +26,8 @@ class NibblesWidget extends StatefulWidget {
 }
 
 class _NibblesWidgetState extends State<NibblesWidget> {
+  final node = FocusNode();
   late final config = widget.config;
-  late final FocusNode node;
   late final startDialogWidget = Stack(
     fit: StackFit.expand,
     children: [
@@ -50,6 +52,9 @@ class _NibblesWidgetState extends State<NibblesWidget> {
                   fontWeight: FontWeight.bold,
                 ),
               ),
+              const Text(
+                '方向键或滑动控制',
+              ),
               const SizedBox(
                 height: 30.0,
               ),
@@ -69,15 +74,17 @@ class _NibblesWidgetState extends State<NibblesWidget> {
           ),
         ),
       ),
-      Positioned(
-        top: 0,
-        left: 0,
-        child: SizedBox(
-          width: appWindow.size.width,
-          height: appWindow.titleBarHeight,
-          child: MoveWindow(),
-        ),
-      )
+      if (!kIsWeb)
+        if (Platform.isWindows || Platform.isMacOS || Platform.isLinux)
+          Positioned(
+            top: 0,
+            left: 0,
+            child: SizedBox(
+              width: appWindow.size.width,
+              height: appWindow.titleBarHeight,
+              child: MoveWindow(),
+            ),
+          )
     ],
   );
 
@@ -87,20 +94,19 @@ class _NibblesWidgetState extends State<NibblesWidget> {
     onScoreChange: onScoreChange,
   );
   late NibblesLinkedList nibblesHeader = NibblesLinkedList(
-    0,
+    initIndex,
     Direction.right,
   );
   bool isWin = false;
   int score = 0;
   Direction currentDirection = Direction.right;
 
+  // 初始化的索引
+  get initIndex =>
+      (config.itemCount / 2).floor() - (config.columnCount / 3).floor();
+
   @override
   initState() {
-    node = FocusNode(
-      debugLabel: 'move',
-      onKey: (FocusNode node, RawKeyEvent event) =>
-          moveDirection(event.logicalKey.keyId),
-    );
     super.initState();
     Timer.run(() {
       start();
@@ -158,17 +164,20 @@ class _NibblesWidgetState extends State<NibblesWidget> {
                 isWin = false;
                 score = 0;
                 nibblesHeader = NibblesLinkedList(
-                  0,
+                  initIndex,
                   Direction.right,
                 );
                 core = NibblesCore(
                   nibblesHeader,
                   config,
-                  onScoreChange: widget.onScoreChange,
+                  onScoreChange: onScoreChange,
                 );
                 core.generatePointNode();
                 currentDirection = Direction.right;
-                Timer(const Duration(milliseconds: 500), init);
+                setState(() {
+                  // 重新初始化一下
+                  Timer(const Duration(milliseconds: 500), init);
+                });
                 SmartDialog.dismiss();
               },
               child: const Text('再来一次'),
@@ -179,16 +188,16 @@ class _NibblesWidgetState extends State<NibblesWidget> {
     );
   }
 
+  // 初始化游戏循环
   init() {
     Timer.periodic(config.timeInterval, (timer) {
       try {
         setState(() {
-          final returnDir = core.moveDirection(currentDirection);
+          final returnDir = core.move(currentDirection);
           if (returnDir != null) currentDirection = returnDir;
         });
       } catch (error) {
         timer.cancel();
-        // TODO 需要判断一下这个error的类型
         if (error is GameException) {
           log(error.message);
           if (error.state == GameState.win) {
@@ -261,61 +270,68 @@ class _NibblesWidgetState extends State<NibblesWidget> {
       },
       child: KeyboardListener(
         focusNode: node,
-        child: FittedBox(
-          fit: BoxFit.contain,
-          child: Container(
-            color: Colors.green.withOpacity(.5),
-            height: config.height,
-            width: config.width,
-            child: GridView.builder(
-              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: config.columnCount,
-                childAspectRatio: 1.0,
-              ),
-              itemCount: itemCount,
-              itemBuilder: (context, index) {
-                bool isEnd = false;
-                NibblesLinkedList? current = nibblesHeader;
-                while (!isEnd) {
-                  if (index == current?.currentIndex) {
-                    // 蛇体
-                    return const NibblesBody();
-                  } else {
-                    current = current?.next;
-                    if (current == null) isEnd = true;
-                  }
-                }
-
-                // 豆豆
-                if (core.pointNodeList.contains(index)) {
-                  return Container(
-                    color: Colors.purple,
-                  );
-                }
-                if (config.obstacle.contains(index)) {
-                  return Container(
-                    color: Colors.white38,
-                  );
-                }
-
-                // 棋盘
-                final rowsIndex = (index / config.columnCount).floor();
-                const rowsColors1 = [Color(0xFFEDD97E), Color(0xFF7FC5E3)];
-                const rowsColors2 = [Color(0xFF7FC5E3), Color(0xFFEDD97E)];
-                List<Color> colors;
-                if (config.columnCount.isEven) {
-                  colors = rowsIndex.isOdd ? rowsColors1 : rowsColors2;
-                } else {
-                  colors = rowsColors1;
-                }
-                return Container(
-                  color: colors[index.isEven ? 0 : 1],
-                  // child: FittedBox(
-                  //   child: Text(index.toString()),
-                  // ),
-                );
-              },
+        autofocus: true,
+        onKeyEvent: (value) {
+          moveDirection(value.logicalKey.keyId);
+        },
+        child: Container(
+          color: Colors.blueAccent,
+          width: config.width,
+          height: config.height,
+          child: GridView.builder(
+            padding: EdgeInsets.zero,
+            physics: const NeverScrollableScrollPhysics(),
+            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: config.columnCount,
+              childAspectRatio: 1.0,
             ),
+            itemCount: itemCount,
+            itemBuilder: (context, index) {
+              // 棋盘
+              final rowsIndex = (index / config.columnCount).floor();
+              const rowsColors1 = [Color(0xFFEDD97E), Color(0xFF7FC5E3)];
+              const rowsColors2 = [Color(0xFF7FC5E3), Color(0xFFEDD97E)];
+              List<Color> colors;
+              if (config.columnCount.isEven) {
+                colors = rowsIndex.isOdd ? rowsColors1 : rowsColors2;
+              } else {
+                colors = rowsColors1;
+              }
+              return Container(
+                color: colors[index.isEven ? 0 : 1],
+                child: Builder(
+                  builder: (context) {
+                    bool isEnd = false;
+                    NibblesLinkedList? current = nibblesHeader;
+                    while (!isEnd) {
+                      if (index == current?.currentIndex) {
+                        // 蛇体
+                        return NibblesBody(
+                          isHeader: current?.isHeader ?? false,
+                        );
+                      } else {
+                        current = current?.next;
+                        if (current == null) isEnd = true;
+                      }
+                    }
+
+                    // 豆豆
+                    if (core.pointNodeList.contains(index)) {
+                      return Container(
+                        color: Colors.purple,
+                      );
+                    }
+                    // 障碍物
+                    if (config.obstacle.contains(index)) {
+                      return Container(
+                        color: Colors.white38,
+                      );
+                    }
+                    return Container();
+                  },
+                ),
+              );
+            },
           ),
         ),
       ),
@@ -324,12 +340,24 @@ class _NibblesWidgetState extends State<NibblesWidget> {
 }
 
 class NibblesBody extends StatelessWidget {
-  const NibblesBody({Key? key}) : super(key: key);
-
+  const NibblesBody({Key? key, this.isHeader = false}) : super(key: key);
+  final bool isHeader;
   @override
   Widget build(BuildContext context) {
     return Container(
-      color: Colors.redAccent,
+      padding: const EdgeInsets.all(3),
+      decoration: BoxDecoration(
+        color: Colors.redAccent,
+        borderRadius: BorderRadius.circular(2),
+      ),
+      child: isHeader
+          ? Container(
+              decoration: BoxDecoration(
+                color: Colors.blueAccent,
+                borderRadius: BorderRadius.circular(999),
+              ),
+            )
+          : Container(),
     );
   }
 }
